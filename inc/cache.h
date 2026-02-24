@@ -17,6 +17,7 @@
 #ifndef CACHE_H
 #define CACHE_H
 
+#include "access_type.h"
 #ifdef CHAMPSIM_MODULE
 #define SET_ASIDE_CHAMPSIM_MODULE
 #undef CHAMPSIM_MODULE
@@ -249,6 +250,10 @@ public:
     virtual void impl_replacement_cache_fill(uint32_t triggering_cpu, long set, long way, champsim::address full_addr, champsim::address ip,
                                              champsim::address victim_addr, access_type type) = 0;
     virtual void impl_replacement_final_stats() = 0;
+    
+    virtual long impl_extra_cycle() = 0;
+
+
   };
 
   template <typename... Ps>
@@ -290,6 +295,8 @@ public:
     void impl_replacement_cache_fill(uint32_t triggering_cpu, long set, long way, champsim::address full_addr, champsim::address ip,
                                      champsim::address victim_addr, access_type type) final;
     void impl_replacement_final_stats() final;
+
+    [[nodiscard]]long impl_extra_cycle() final;
   };
 
   std::unique_ptr<prefetcher_module_concept> pref_module_pimpl;
@@ -313,6 +320,8 @@ public:
   void impl_replacement_cache_fill(uint32_t triggering_cpu, long set, long way, champsim::address full_addr, champsim::address ip,
                                    champsim::address victim_addr, access_type type) const;
   void impl_replacement_final_stats() const;
+
+  [[nodiscard]]long impl_extra_cycle () const;
   // NOLINTEND(readability-make-member-function-const)
 
   template <typename... Ps, typename... Rs>
@@ -434,6 +443,50 @@ void CACHE::replacement_module_model<Rs...>::impl_initialize_replacement()
 
   std::apply([&](auto&... r) { (..., process_one(r)); }, intern_);
 }
+
+template <typename... Rs>
+long CACHE::replacement_module_model<Rs...>::impl_extra_cycle(){
+  using return_type = long;
+  [[maybe_unused]] auto process_one = [&](auto &r){
+    using namespace champsim::modules;
+    if constexpr (replacement::has_extra_cycle<decltype(r)>)
+      return r.extra_cycle();    
+    return return_type{};
+  };
+
+  if constexpr (sizeof...(Rs) > 0) {
+    return std::apply([&](auto&... r) { return (..., process_one(r)); }, intern_);
+  }
+  return return_type{};
+
+/*
+  using return_type = long;
+  [[maybe_unused]] auto process_one = [&](auto& r) {
+    using namespace champsim::modules;
+
+    if constexpr (replacement::has_find_victim<decltype(r), uint32_t, uint64_t, long, const BLOCK*, champsim::address, champsim::address, access_type>)
+      return return_type{r.find_victim(0,0,0,0,0, 0, access_type{access_type::LOAD})};
+
+    if constexpr (replacement::has_find_victim<decltype(r), uint32_t, uint64_t, long, const BLOCK*, champsim::address, champsim::address,
+                                               std::underlying_type_t<access_type>>)
+      return return_type{r.find_victim(0,0,0,0,0, 0, access_type{access_type::LOAD})};
+
+
+    if constexpr (replacement::has_find_victim<decltype(r), uint32_t, uint64_t, long, const BLOCK*, uint64_t, uint64_t, std::underlying_type_t<access_type>>)
+      return return_type{r.find_victim(0,0,0,0,0, 0, access_type{access_type::LOAD})};
+
+
+    return return_type{};
+  };
+
+  if constexpr (sizeof...(Rs) > 0) {
+    return std::apply([&](auto&... r) { return (..., process_one(r)); }, intern_);
+  }
+  return return_type{};
+
+  */
+};
+
 
 template <typename... Rs>
 long CACHE::replacement_module_model<Rs...>::impl_find_victim(uint32_t triggering_cpu, uint64_t instr_id, long set, const BLOCK* current_set,

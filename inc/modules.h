@@ -165,6 +165,16 @@ struct replacement : public bound_to<CACHE> {
   static auto find_victim_member_impl(int) -> decltype(std::declval<T>().find_victim(std::declval<Args>()...), std::true_type{});
   template <typename, typename...>
   static auto find_victim_member_impl(long) -> std::false_type;
+  
+  template <typename T,typename... Args>
+  static auto extra_cycle_member_impl(int) -> decltype(std::declval<T>().extra_cycle(std::declval<Args>()...),std::true_type{});
+
+  template <typename,typename...>
+  static auto extra_cycle_member_impl(long) -> std::false_type;
+
+  template <typename T,typename... Args>
+  constexpr static bool has_extra_cycle = decltype(extra_cycle_member_impl<T, Args...>(0))::value;
+
 
   template <typename T, typename... Args>
   static auto update_state_member_impl(int) -> decltype(std::declval<T>().update_replacement_state(std::declval<Args>()...), std::true_type{});
