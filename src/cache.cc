@@ -384,7 +384,7 @@ bool CACHE::handle_write(const tag_lookup_type& handle_pkt)
 
   mshr_type to_allocate{handle_pkt, current_time};
   to_allocate.data_promise.ready_at(current_time + 
-      (warmup ? champsim::chrono::clock::duration{} : (FILL_LATENCY+champsim::chrono::clock::duration{impl_extra_cycle()*this->clock_period}) ));
+      (warmup ? champsim::chrono::clock::duration{} : (FILL_LATENCY /*+champsim::chrono::clock::duration{impl_extra_cycle()*this->clock_period} */) ));
   inflight_writes.push_back(to_allocate);
 
   sim_stats.misses.increment(std::pair{handle_pkt.type, handle_pkt.cpu});
@@ -465,8 +465,7 @@ long CACHE::operate()
   // Initiate tag checks
   // std::cout << "---->" << (long)(HIT_LATENCY/clock_period) << " " << impl_extra_cycle() << " " << NAME <<  " ";
   // std::cout << champsim::chrono::clock::duration{clock_period}.count() <<" HIT_LATENCY" <<  champsim::chrono::clock::duration{HIT_LATENCY}.count() << std::endl; 
-  const champsim::bandwidth::maximum_type bandwidth_from_tag_checks{champsim::to_underlying(MAX_TAG) * (long)((HIT_LATENCY / clock_period) + impl_extra_cycle())
-                                                                    - (long)std::size(inflight_tag_check)};
+  const champsim::bandwidth::maximum_type bandwidth_from_tag_checks{champsim::to_underlying(MAX_TAG) * (long)((HIT_LATENCY / clock_period) + impl_extra_cycle()) - (long)std::size(inflight_tag_check)};
   champsim::bandwidth initiate_tag_bw{std::clamp(bandwidth_from_tag_checks, champsim::bandwidth::maximum_type{0}, MAX_TAG)};
   auto can_translate = [avail = (std::size(translation_stash) < static_cast<std::size_t>(MSHR_SIZE))](const auto& entry) {
     return avail || entry.is_translated;
@@ -637,7 +636,7 @@ void CACHE::finish_packet(const response_type& packet)
   // MSHR holds the most updated information about this request
   mshr_type::returned_value finished_value{packet.data, packet.pf_metadata};
   mshr_entry->data_promise = champsim::waitable{finished_value, current_time + 
-    (warmup ? champsim::chrono::clock::duration{} : (FILL_LATENCY + champsim::chrono::clock::duration{impl_extra_cycle()*this->clock_period}))};
+    (warmup ? champsim::chrono::clock::duration{} : (FILL_LATENCY /*+ champsim::chrono::clock::duration{impl_extra_cycle()*this->clock_period}*/ ))};
   if constexpr (champsim::debug_print) {
     fmt::print("[{}_MSHR] finish_packet instr_id: {} address: {} data: {} type: {} current: {}\n", this->NAME, mshr_entry->instr_id, mshr_entry->address,
                mshr_entry->data_promise->data, access_type_names.at(champsim::to_underlying(mshr_entry->type)), current_time.time_since_epoch() / clock_period);
