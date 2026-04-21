@@ -78,8 +78,7 @@ void deltartlru::update_replacement_state(uint32_t triggering_cpu, long set, lon
   // stride check 
   bool stride_ok = false;
   //std::cout << access_type_to_string((uint8_t)type) << std::endl;
-  if (this->ignore_prefetch == true && 
-      (type == access_type::WRITE || type==access_type::LOAD))
+  if (this->ignore_prefetch == false || (type == access_type::WRITE || type==access_type::LOAD)) 
   {
     if (track[set][0] == track[set][2] && 
       track[set][1] == track[set][3])
