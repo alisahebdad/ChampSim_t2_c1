@@ -5,8 +5,22 @@
 #include <cstdlib>
 #include <iostream>
 #include <vector>
+#include <string.h>
 
 long extra_cycle_w;
+
+
+std::string access_type_to_string(uint8_t type) {
+    switch (type) {
+      case (uint8_t)access_type::LOAD:        return "LOAD";
+      case (uint8_t)access_type::RFO:         return "RFO";
+      case (uint8_t)access_type::PREFETCH:    return "PREFETCH";
+      case (uint8_t)access_type::WRITE:       return "WRITE";
+      case (uint8_t)access_type::TRANSLATION: return "TRANSLATION";
+      case (uint8_t)access_type::NUM_TYPES:   return "NUM_TYPES";
+      default:                                return "UNKNOWN";
+    }
+}
 
 
 deltartlru::deltartlru(CACHE* cache) : deltartlru(cache, cache->NUM_SET, cache->NUM_WAY) {
@@ -14,7 +28,9 @@ deltartlru::deltartlru(CACHE* cache) : deltartlru(cache, cache->NUM_SET, cache->
 
 deltartlru::deltartlru(CACHE* cache, long sets, long ways) : replacement(cache), NUM_WAY(ways), last_used_cycles(static_cast<std::size_t>(sets * ways), 0) {
   std::cout << "deltartlru installed \n" ;
+  this->ignore_prefetch = true;
   std::cout << "SETS : " << sets << " WAYS : " << ways << std::endl;
+  std::cout << "Ignore for prefetcher : " << this->ignore_prefetch << std::endl;
   this->window_size = 4;
   std::cout << "Number of track : " << this->window_size << std::endl;
   rt_position = new long[sets]();
@@ -45,7 +61,6 @@ long deltartlru::find_victim(uint32_t triggering_cpu, uint64_t instr_id, long se
   assert(begin <= victim);
   assert(victim < end);
 
-  //rt_position[set] = result ;
   return std::distance(begin, victim);
 }
 
@@ -62,23 +77,22 @@ void deltartlru::update_replacement_state(uint32_t triggering_cpu, long set, lon
 {
   // stride check 
   bool stride_ok = false;
-  if (track[set][0] == track[set][2] && 
+  //std::cout << access_type_to_string((uint8_t)type) << std::endl;
+  if (this->ignore_prefetch == true && 
+      (type == access_type::WRITE || type==access_type::LOAD))
+  {
+    if (track[set][0] == track[set][2] && 
       track[set][1] == track[set][3])
     stride_ok = true;
+    // add to quque 
+    track[set][3] = track[set][2];
+    track[set][2] = track[set][1];
+    track[set][1] = track[set][0]; 
+    track[set][0] = way;
 
-  // add to quque 
-  track[set][3] = track[set][2];
-  track[set][2] = track[set][1];
-  track[set][1] = track[set][0]; 
-  track[set][0] = way;
-
-  //if (set == 10)
-  //  std::cout << way << std::endl;
-
-  // avg4 long distance = ((int)(track[set][3]+track[set][2]+track[set][1])/3)-track[set][0]; //stride_ok ? 0 : (track[set][1] - track[set][0]) ;
-
-  long distance = stride_ok ? 0 :  std::abs(way-track[set][1]); //stride_ok ? 0 : (track[set][1] - track[set][0]) ;
-
+  }
+  long distance = stride_ok ? 0 :  std::abs(way-rt_position[set]); //stride_ok ? 0 : (track[set][1] - track[set][0]) ;
+  rt_position[set] = way;
 
   extra_cycle_w = distance;
   if (hit)

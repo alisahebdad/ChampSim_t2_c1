@@ -16,6 +16,7 @@ class deltartlru : public champsim::modules::replacement
   long *rt_position;
   std::vector<long> *track;
   int window_size ;
+  bool ignore_prefetch;
 
 public:
   explicit deltartlru(CACHE* cache);
