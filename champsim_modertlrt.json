@@ -72,8 +72,8 @@
   },
 
   "L2C": {
-    "sets": 1024,
-    "ways": 8,
+    "sets": 512,
+    "ways": 16,
     "rq_size": 32,
     "wq_size": 32,
     "pq_size": 16,

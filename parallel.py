@@ -5,18 +5,25 @@ from pathlib import Path
 
 # ===== CONFIG =====
 BINARIES = [
-    "bin/champsim"
+    "bin/champsim_deltartlru",
+    "bin/champsim_lru",
+    "bin/champsim_modertlru",
+    "bin/champsim_rtlru"
 ]
 
 WORKLOAD_DIRS = [
-    "/home/ownergive/Documents/workload/401.bzip2-7B.champsimtrace.xz",
-    "/home/ownergive/Documents/workload/403.gcc-16B.champsimtrace.xz"
+    "/home/ali/Documents/workload/401.bzip2-7B.champsimtrace.xz",
+    "/home/ali/Documents/workload/403.gcc-16B.champsimtrace.xz",
+    "/home/ali/Documents/workload/435.gromacs-228B.champsimtrace.xz",
+    "/home/ali/Documents/workload/473.astar-42B.champsimtrace.xz",
+    "/home/ali/Documents/workload/605.mcf_s-484B.champsimtrace.xz",
+    "/home/ali/Documents/workload/462.libquantum-714B.champsimtrace.xz"
 ]
 
-OUTPUT_DIR = "/home/ownergive/Documents/logs"
-MAX_PARALLEL = 4  # adjust based on CPU
-WARMUP = 1*1000*1000
-SIM    = 3*1000*1000
+OUTPUT_DIR = "/home/ali/Documents/logs/"
+MAX_PARALLEL = 12  # adjust based on CPU
+WARMUP = 20*1000*1000
+SIM    = 180*1000*1000
 
 # ==================
 
