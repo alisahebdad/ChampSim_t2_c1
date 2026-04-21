@@ -427,8 +427,11 @@ auto CACHE::initiate_tag_check(champsim::channel* ul)
 
 long CACHE::operate()
 {
-  long progress{0};
 
+
+  long progress{0};
+  //if (this->NAME == "LLC")
+  //  std::cout << "operate START " << std::endl;// << " " << this->NAME <<  std::endl;
   auto is_ready = [time = current_time](const auto& entry) {
     return entry.event_cycle <= time;
   };
@@ -465,7 +468,7 @@ long CACHE::operate()
   // Initiate tag checks
   // std::cout << "---->" << (long)(HIT_LATENCY/clock_period) << " " << impl_extra_cycle() << " " << NAME <<  " ";
   // std::cout << champsim::chrono::clock::duration{clock_period}.count() <<" HIT_LATENCY" <<  champsim::chrono::clock::duration{HIT_LATENCY}.count() << std::endl; 
-  const champsim::bandwidth::maximum_type bandwidth_from_tag_checks{champsim::to_underlying(MAX_TAG) * (long)((HIT_LATENCY / clock_period) + impl_extra_cycle()) - (long)std::size(inflight_tag_check)};
+  const champsim::bandwidth::maximum_type bandwidth_from_tag_checks{champsim::to_underlying(MAX_TAG) * (long)((HIT_LATENCY / clock_period) /* + impl_extra_cycle() */) - (long)std::size(inflight_tag_check)};
   champsim::bandwidth initiate_tag_bw{std::clamp(bandwidth_from_tag_checks, champsim::bandwidth::maximum_type{0}, MAX_TAG)};
   auto can_translate = [avail = (std::size(translation_stash) < static_cast<std::size_t>(MSHR_SIZE))](const auto& entry) {
     return avail || entry.is_translated;
@@ -535,6 +538,12 @@ long CACHE::operate()
                NAME, __func__, current_time.time_since_epoch() / clock_period, tag_check_bw.amount_consumed(), std::size(inflight_tag_check),
                stash_bandwidth_consumed, std::size(translation_stash), channels_bandwidth_consumed, pq_bandwidth_consumed, initiate_tag_bw.amount_remaining());
   }
+
+
+  //if (this->NAME == "LLC")
+  //    std::cout << "operate END " << std::endl;// << " " << this->NAME <<  std::endl;
+
+
 
   return progress + fill_bw.amount_consumed() + initiate_tag_bw.amount_consumed() + tag_check_bw.amount_consumed();
 }

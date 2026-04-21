@@ -72,8 +72,8 @@
   },
 
   "L2C": {
-    "sets": 1024,
-    "ways": 8,
+    "sets": 512,
+    "ways": 16,
     "rq_size": 32,
     "wq_size": 32,
     "pq_size": 16,
@@ -84,7 +84,8 @@
     "prefetch_as_load": false,
     "virtual_prefetch": false,
     "prefetch_activate": "LOAD,PREFETCH",
-    "prefetcher": "no"
+    "prefetcher": "no",
+    "replacement": "deltartlru"
   },
 
   "ITLB": {
@@ -143,8 +144,8 @@
 
   "LLC": {
     "frequency": 4000,
-    "sets": 2048,
-    "ways": 16,
+    "sets": 1024,
+    "ways": 32,
     "rq_size": 32,
     "wq_size": 32,
     "pq_size": 32,
@@ -156,7 +157,7 @@
     "virtual_prefetch": false,
     "prefetch_activate": "LOAD,PREFETCH",
     "prefetcher": "no",
-    "replacement": "rtlru"
+    "replacement": "lru"
   },
 
   "physical_memory": {
