@@ -5,24 +5,27 @@ from pathlib import Path
 
 # ===== CONFIG =====
 BINARIES = [
-    "bin/champsim_deltartlru",
-    "bin/champsim_lru",
-    "bin/champsim_modertlru",
-    "bin/champsim_rtlru"
+    "champsim",
 ]
 
 WORKLOAD_DIRS = [
-    "/home/ali/Documents/workload/401.bzip2-7B.champsimtrace.xz",
-    "/home/ali/Documents/workload/403.gcc-16B.champsimtrace.xz",
-    "/home/ali/Documents/workload/435.gromacs-228B.champsimtrace.xz",
-    "/home/ali/Documents/workload/473.astar-42B.champsimtrace.xz",
-    "/home/ali/Documents/workload/605.mcf_s-484B.champsimtrace.xz",
-    "/home/ali/Documents/workload/462.libquantum-714B.champsimtrace.xz"
+    "/home/ownergive/Documents/workload/600.perlbench_s-1273B.champsimtrace.xz",
+    "/home/ownergive/Documents/workload/605.mcf_s-484B.champsimtrace.xz",
+    "/home/ownergive/Documents/workload/607.cactuBSSN_s-2421B.champsimtrace.xz",
+    "/home/ownergive/Documents/workload/620.omnetpp_s-141B.champsimtrace.xz",
+    "/home/ownergive/Documents/workload/623.xalancbmk_s-165B.champsimtrace.xz",
+    "/home/ownergive/Documents/workload/628.pop2_s-17B.champsimtrace.xz",
+    "/home/ownergive/Documents/workload/631.deepsjeng_s-928B.champsimtrace.xz",
+    "/home/ownergive/Documents/workload/638.imagick_s-824B.champsimtrace.xz",
+    "/home/ownergive/Documents/workload/644.nab_s-5853B.champsimtrace.xz",
+    "/home/ownergive/Documents/workload/648.exchange2_s-72B.champsimtrace.xz",
+    "/home/ownergive/Documents/workload/649.fotonik3d_s-1B.champsimtrace.xz",
+    "/home/ownergive/Documents/workload/657.xz_s-56B.champsimtrace.xz"
 ]
 
-OUTPUT_DIR = "/home/ali/Documents/logs/"
-MAX_PARALLEL = 12  # adjust based on CPU
-WARMUP = 20*1000*1000
+OUTPUT_DIR = "/home/ownergive/Documents/logs/"
+MAX_PARALLEL = 4 # adjust based on CPU
+WARMUP = 2*1000*1000
 SIM    = 180*1000*1000
 
 # ==================
@@ -34,22 +37,28 @@ def run_job(binary, workload_dir):
     binary_name = Path(binary).name
     workload_name = Path(workload_dir).name
 
+    print(workload_name)
+    os.system(f"mkdir -p {os.path.join(OUTPUT_DIR,workload_name)}")
+    os.system(f"cp bin/{binary}  {os.path.join(OUTPUT_DIR,workload_name)}/")
+
+    os.system(f"echo {binary} {os.path.join(OUTPUT_DIR,workload_name)} > {os.path.join(OUTPUT_DIR,workload_name)}/info.txt")
+    os.sync() 
+    
     log_file = os.path.join(
         OUTPUT_DIR,
         f"{binary_name}__{workload_name}.log"
     )
-
     cmd = [
-		binary, 
+		f"{os.path.join(OUTPUT_DIR,workload_name)}/{binary}",
         "--warmup-instructions", str(WARMUP),
         "--simulation-instructions", str(SIM),
         workload_dir]
-
     print(f"[START] {binary_name} on {workload_name}")
-
     with open(log_file, "w") as f:
+        print (cmd)
         process = subprocess.Popen(
             cmd,
+            cwd=os.path.join(OUTPUT_DIR,workload_name),
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             text=True,
