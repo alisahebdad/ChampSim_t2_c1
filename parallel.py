@@ -2,6 +2,7 @@ import os
 import subprocess
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
+import shutil
 
 # ===== CONFIG =====
 BINARIES = [
@@ -25,8 +26,8 @@ WORKLOAD_DIRS = [
 
 OUTPUT_DIR = "/home/ownergive/Documents/logs/"
 MAX_PARALLEL = 4 # adjust based on CPU
-WARMUP = 2*1000*1000
-SIM    = 180*1000*1000
+WARMUP = 1*1000*1000
+SIM    = 1*1000*1000
 
 # ==================
 
@@ -34,6 +35,166 @@ os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 
 def run_job(binary, workload_dir):
+    binary_name = Path(binary).name
+    workload_name = Path(workload_dir).name
+
+    print(f"[INFO] workload = {workload_name}", flush=True)
+
+    out_dir = os.path.join(OUTPUT_DIR, workload_name)
+
+    # create directory
+    os.makedirs(out_dir, exist_ok=True)
+
+    # copy binary
+    shutil.copy(f"bin/{binary}", out_dir)
+
+    # write info
+    with open(os.path.join(out_dir, "info.txt"), "w") as info:
+        info.write(f"{binary} {out_dir}\n")
+
+    os.sync()
+
+    log_file = os.path.join(
+        OUTPUT_DIR,
+        f"{binary_name}__{workload_name}.log"
+    )
+
+    cmd = [
+        f"{out_dir}/{binary}",
+        "--warmup-instructions", str(WARMUP),
+        "--simulation-instructions", str(SIM),
+        workload_dir
+    ]
+
+    print(f"[START] {binary_name} on {workload_name}", flush=True)
+    print(f"[CMD] {' '.join(cmd)}", flush=True)
+
+    with open(log_file, "w") as f:
+
+        # stdbuf forces line-buffered stdout/stderr
+        full_cmd = [
+            "stdbuf",
+            "-oL",
+            "-eL",
+            *cmd
+        ]
+
+        process = subprocess.Popen(
+            full_cmd,
+            cwd=out_dir,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            bufsize=1,
+            universal_newlines=True
+        )
+
+        # stream output live
+        for line in iter(process.stdout.readline, ''):
+
+            if not line:
+                break
+
+            line = line.rstrip()
+
+            # print immediately
+            print(
+                f"[{binary_name}|{workload_name}] {line}",
+                flush=True
+            )
+
+            # save immediately
+            f.write(line + "\n")
+            f.flush()
+
+        process.stdout.close()
+
+        return_code = process.wait()
+
+    print(
+        f"[DONE] {binary_name} on {workload_name} (rc={return_code})",
+        flush=True
+    )
+    if os.path.exists(f"{out_dir}/access_trace.txt"):
+        os.rename(f"{out_dir}/access_trace.txt",f"{out_dir}/access_trace_{workload_name}.txt")
+
+    return log_file
+
+def run_job__(binary, workload_dir):
+    binary_name = Path(binary).name
+    workload_name = Path(workload_dir).name
+
+    print(workload_name)
+
+    out_dir = os.path.join(OUTPUT_DIR, workload_name)
+
+    os.makedirs(out_dir, exist_ok=True)
+
+    shutil.copy(f"bin/{binary}", out_dir)
+
+    with open(os.path.join(out_dir, "info.txt"), "w") as info:
+        info.write(f"{binary} {out_dir}\n")
+
+    os.sync()
+
+    log_file = os.path.join(
+        OUTPUT_DIR,
+        f"{binary_name}__{workload_name}.log"
+    )
+
+    cmd = [
+        f"{out_dir}/{binary}",
+        "--warmup-instructions", str(WARMUP),
+        "--simulation-instructions", str(SIM),
+        workload_dir
+    ]
+
+    print(f"[START] {binary_name} on {workload_name}")
+    print(cmd)
+
+    with open(log_file, "w") as f:
+
+        process = subprocess.Popen(
+            cmd,
+            cwd=out_dir,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            bufsize=1,
+            universal_newlines=True
+        )
+
+        # Read stdout live
+        while True:
+            stdout_line = process.stdout.readline()
+            stderr_line = process.stderr.readline()
+
+            if stdout_line:
+                stdout_line = stdout_line.rstrip()
+                print(f"[STDOUT][{binary_name}|{workload_name}] {stdout_line}")
+                f.write(f"[STDOUT] {stdout_line}\n")
+                f.flush()
+
+            if stderr_line:
+                stderr_line = stderr_line.rstrip()
+                print(f"[STDERR][{binary_name}|{workload_name}] {stderr_line}")
+                f.write(f"[STDERR] {stderr_line}\n")
+                f.flush()
+
+            # Exit when process finished
+            if (
+                stdout_line == ""
+                and stderr_line == ""
+                and process.poll() is not None
+            ):
+                break
+
+        return_code = process.wait()
+
+    print(f"[DONE] {binary_name} on {workload_name} (rc={return_code})")
+
+    return log_file
+def run_job_(binary, workload_dir):
     binary_name = Path(binary).name
     workload_name = Path(workload_dir).name
 
