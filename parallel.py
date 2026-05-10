@@ -9,6 +9,31 @@ BINARIES = [
     "champsim",
 ]
 
+
+
+WORKLOAD_DIRS = [
+    "/home/ali/Documents/workload/600.perlbench_s-1273B.champsimtrace.xz",
+    "/home/ali/Documents/workload/602.gcc_s-734B.champsimtrace.xz" ,
+    "/home/ali/Documents/workload/603.bwaves_s-891B.champsimtrace.xz" ,
+    "/home/ali/Documents/workload/605.mcf_s-484B.champsimtrace.xz",
+    "/home/ali/Documents/workload/607.cactuBSSN_s-2421B.champsimtrace.xz",
+    "/home/ali/Documents/workload/619.lbm_s-2676B.champsimtrace.xz" ,
+    "/home/ali/Documents/workload/621.wrf_s-575B.champsimtrace.xz",
+    "/home/ali/Documents/workload/623.xalancbmk_s-165B.champsimtrace.xz",
+    "/home/ali/Documents/workload/625.x264_s-12B.champsimtrace.xz" ,
+    "/home/ali/Documents/workload/627.cam4_s-490B.champsimtrace.xz" ,    
+    "/home/ali/Documents/workload/628.pop2_s-17B.champsimtrace.xz",
+    "/home/ali/Documents/workload/631.deepsjeng_s-928B.champsimtrace.xz",
+    "/home/ali/Documents/workload/638.imagick_s-824B.champsimtrace.xz",
+    "/home/ali/Documents/workload/641.leela_s-149B.champsimtrace.xz" ,
+    "/home/ali/Documents/workload/644.nab_s-5853B.champsimtrace.xz",
+    "/home/ali/Documents/workload/648.exchange2_s-72B.champsimtrace.xz",
+    "/home/ali/Documents/workload/649.fotonik3d_s-1B.champsimtrace.xz",
+    "/home/ali/Documents/workload/654.roms_s-293B.champsimtrace.xz" ,
+    "/home/ali/Documents/workload/657.xz_s-56B.champsimtrace.xz" 
+]
+
+
 WORKLOAD_DIRS = [
     "/home/ownergive/Documents/workload/600.perlbench_s-1273B.champsimtrace.xz",
     "/home/ownergive/Documents/workload/605.mcf_s-484B.champsimtrace.xz",
