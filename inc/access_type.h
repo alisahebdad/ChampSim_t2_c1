@@ -19,6 +19,8 @@
 
 #include <array>
 #include <string_view>
+#include <fstream>
+
 
 enum class access_type : unsigned {
   LOAD = 0,
@@ -28,6 +30,22 @@ enum class access_type : unsigned {
   TRANSLATION,
   NUM_TYPES,
 };
+
+
+inline std::ostream& operator<< (std::ostream& os,access_type type){
+  switch(type){
+    case access_type::LOAD: os << "LOAD";break;
+    case access_type::RFO : os << "RFO";break;
+    case access_type::PREFETCH: os << "PREFETCH";break;
+    case access_type::WRITE: os << "WRITE";break;
+    case access_type::TRANSLATION: os << "TRANSLATION";break;
+    case access_type::NUM_TYPES: os << "NUM_TYPES";break;
+    default: os << "Unknown";break;  
+  }
+  return os ;
+}
+
+
 
 using namespace std::literals::string_view_literals;
 inline constexpr std::array<std::string_view, static_cast<std::size_t>(access_type::NUM_TYPES)> access_type_names{"LOAD"sv, "RFO"sv, "PREFETCH"sv, "WRITE"sv,
