@@ -3,21 +3,8 @@
 #include <fstream>
 #include <algorithm>
 #include <cassert>
-
+#include "access_type.h"
 std::ofstream out("access_trace.txt");
-
-std::ostream& operator<< (std::ostream& os,access_type type){
-  switch(type){
-    case access_type::LOAD: os << "LOAD";break;
-    case access_type::RFO : os << "RFO";break;
-    case access_type::PREFETCH: os << "PREFETCH";break;
-    case access_type::WRITE: os << "WRITE";break;
-    case access_type::TRANSLATION: os << "TRANSLATION";break;
-    case access_type::NUM_TYPES: os << "NUM_TYPES";break;
-    default: os << "Unknown";break;  
-  }
-  return os ;
-}
 
 
 

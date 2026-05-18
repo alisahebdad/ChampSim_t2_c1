@@ -1,29 +1,28 @@
-#ifndef REPLACEMENT_RTLRU_H
-#define REPLACEMENT_RTLRU_H
+#ifndef REPLACEMENT_AVGRTLRUP_H
+#define REPLACEMENT_AVGRTLRUP_H
 
 #include <vector>
-
+#include <deque>
 #include "cache.h"
 #include "modules.h"
 
-class rtlru : public champsim::modules::replacement
+class avgrtlrup : public champsim::modules::replacement
 {
   long NUM_WAY;
   std::vector<uint64_t> last_used_cycles;
-  uint64_t cycle = 0;
-
-  long extra_cycle_;
-  
+  uint64_t cycle = 0; 
   long long hit_cycle[6];
   long long miss_cycle[6];
   long *rt_position;
-  CACHE *myCache;
-
-
+  long *rt_benefit;
+  std::deque<long int> *track;
+  size_t window_size ;
+  int threshold;
+  long extra_cycle_w;
 
 public:
-  explicit rtlru(CACHE* cache);
-  rtlru(CACHE* cache, long sets, long ways);
+  explicit avgrtlrup(CACHE* cache);
+  avgrtlrup(CACHE* cache, long sets, long ways);
 
   // void initialize_replacement();
   long find_victim(uint32_t triggering_cpu, uint64_t instr_id, long set, const champsim::cache_block* current_set, champsim::address ip,
