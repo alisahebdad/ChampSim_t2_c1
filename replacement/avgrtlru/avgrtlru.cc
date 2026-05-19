@@ -17,7 +17,9 @@ avgrtlru::avgrtlru(CACHE* cache, long sets, long ways) : replacement(cache), NUM
 	this->window_size = 5;
   rt_position = new long[sets]();
   this->track = new std::deque <long int>[sets] ();
-
+  for (auto i = 0;i<sets;++i)
+    this->track[i].push_back(ways);
+ 
   for (int i = 0;i<6;++i){
     hit_cycle[i] = 0ll;
     miss_cycle[i] = 0ll;
@@ -51,24 +53,39 @@ void avgrtlru::replacement_cache_fill(uint32_t triggering_cpu, long set, long wa
 void avgrtlru::update_replacement_state(uint32_t triggering_cpu, long set, long way, champsim::address full_addr, champsim::address ip,
                                    champsim::address victim_addr, access_type type, uint8_t hit)
 {
+  long int sum = 0;
+  for (auto it = this->track[set].rbegin(); it != this->track[set].rend(); ++it){
+      //if (set == 0) std::cout << *it << " " ;
+      sum += *it ;
+  }
+  
+  long avg           = sum/this->track[set].size();
+  auto last          = this->track[set].back();
+  auto with_preshift = abs(avg-way);
+  auto no_preshift   = abs(last-way);
+  //if (rt_benefit[set])
+  extra_cycle_w = with_preshift;
+  //else
+  // extra_cycle_w = no_preshift; 
 
+ 	/* 
+  if (with_preshift < no_preshift)
+    rt_benefit[set] = 1;
+  else
+    rt_benefit[set] = 0;
 
-  extra_cycle_w = abs(rt_position[set]-way);
+	*/
+  this->track[set].push_back(way);    
   if (this->track[set].size() >= this->window_size)
     this->track[set].pop_front();
-  this->track[set].push_back(way);    
-  long int sum = 0;
-  for (auto it = this->track[set].rbegin(); it != this->track[set].rend(); ++it)
-      sum += *it ;
-
-  rt_position[set] = sum/this->track[set].size();
-
+  
 
 
   if (hit)
     hit_cycle[(int)type] += extra_cycle_w; 
   else
     miss_cycle[(int)type] += extra_cycle_w;
+
 
 
   // Mark the way as being used on the current cycle
@@ -85,11 +102,11 @@ void avgrtlru::replacement_final_stats(){
     total_miss += miss_cycle[i]; 
   }
 
-  std::cout << "LOAD\t\tHIT:\t"       << hit_cycle[(int)access_type::LOAD]        << "\tMISS:\t" << miss_cycle[(int)access_type::LOAD]        << std::endl;
+  std::cout << "TRANSLATION\tHIT:\t"  << hit_cycle[(int)access_type::TRANSLATION] << "\tMISS:\t" << miss_cycle[(int)access_type::TRANSLATION] << std::endl;
   std::cout << "RFO\t\tHIT:\t"        << hit_cycle[(int)access_type::RFO]         << "\tMISS:\t" << miss_cycle[(int)access_type::RFO]         << std::endl;
   std::cout << "PREFETCH\tHIT:\t"     << hit_cycle[(int)access_type::PREFETCH]    << "\tMISS:\t" << miss_cycle[(int)access_type::PREFETCH]    << std::endl;
   std::cout << "WRITE\t\tHIT:\t"      << hit_cycle[(int)access_type::WRITE]       << "\tMISS:\t" << miss_cycle[(int)access_type::WRITE]       << std::endl;
-  std::cout << "TRANSLATION\tHIT:\t"  << hit_cycle[(int)access_type::TRANSLATION] << "\tMISS:\t" << miss_cycle[(int)access_type::TRANSLATION] << std::endl;
+  std::cout << "LOAD\t\tHIT:\t"       << hit_cycle[(int)access_type::LOAD]        << "\tMISS:\t" << miss_cycle[(int)access_type::LOAD]        << std::endl;
   std::cout << "TOTAL\tHIT:\t"        << total_hit                                << "\tMISS:\t" << total_miss  << std::endl;
 
 
