@@ -11,19 +11,29 @@ Layout produced:
         |-- <binary>    (copied in)
         '-- (whatever the binary writes lands here, isolated)
 
+Each session runs the binary as:
+
+    ./<binary> --warmup-instructions W --simulation-instructions S \
+               <file> <file> ... (repeated --copies times)
+
 Examples
 --------
-    # One binary, files in ./inputs, workspace under ./out
+    # Defaults: warmup 200000000, simulation 1000000000, file passed 4x
     python3 run_tmux_batch.py ./inputs -o ./out -b ./my_binary
 
-    # Several binaries
-    python3 run_tmux_batch.py ./inputs -o ./out -b ./bin_a -b ./bin_b
+    # Custom instruction counts
+    python3 run_tmux_batch.py ./inputs -o ./out -b ./my_binary \
+        --warmup-instructions 50000000 --simulation-instructions 500000000
 
-    # Only .txt files, keep each session open after it finishes
-    python3 run_tmux_batch.py ./inputs -o ./out -b ./my_binary --ext .txt --keep-alive
+    # Pass the file a different number of times (e.g. 1 core)
+    python3 run_tmux_batch.py ./inputs -o ./out -b ./my_binary --copies 1
 
-    # Extra args; {file} marks where the input path goes (else appended)
-    python3 run_tmux_batch.py ./inputs -o ./out -b ./my_binary --args "--verbose {file}"
+    # Several binaries, only .champsimtrace files, sessions kept open
+    python3 run_tmux_batch.py ./inputs -o ./out -b ./bin_a -b ./bin_b \
+        --ext .champsimtrace --keep-alive
+
+    # Extra flags inserted before the file(s)
+    python3 run_tmux_batch.py ./inputs -o ./out -b ./my_binary --args "--seed 1"
 
     # Preview without copying or launching anything
     python3 run_tmux_batch.py ./inputs -o ./out -b ./my_binary --dry-run
@@ -50,24 +60,37 @@ def make_executable(path: Path) -> None:
 
 
 def build_command(work_dir: Path, binary_name: str, input_path: Path,
-                  args_template: str) -> str:
+                  warmup: int, simulation: int, copies: int,
+                  extra_args: str, stdout_file: str) -> str:
     """
-    cd into the per-file work dir and run the local binary copy against the
-    input's absolute path (the input itself is not copied in).
+    cd into the per-file work dir and run the local binary copy as:
+
+        ./<binary> --warmup-instructions W --simulation-instructions S \
+                   [extra args] <file> ... (xN)  > <stdout_file> 2> <stderr_file>
+
+    stdout goes to `stdout_file` and stderr to "<stdout_file>.err", both inside
+    the work dir (i.e. right next to the binary). The input is referenced by
+    absolute path and is not copied in.
     """
     cd_part = f"cd {shlex.quote(str(work_dir))}"
     invocation = f"./{shlex.quote(binary_name)}"
     quoted_input = shlex.quote(str(input_path))
 
-    if args_template:
-        if "{file}" in args_template:
-            run_part = f"{invocation} {args_template.replace('{file}', quoted_input)}"
-        else:
-            run_part = f"{invocation} {args_template} {quoted_input}"
-    else:
-        run_part = f"{invocation} {quoted_input}"
+    parts = [
+        invocation,
+        "--warmup-instructions", str(warmup),
+        "--simulation-instructions", str(simulation),
+    ]
+    if extra_args:
+        parts.append(extra_args)              # inserted verbatim before the files
+    parts.extend([quoted_input] * copies)     # the file, repeated `copies` times
 
-    return f"{cd_part} && {run_part}"
+    # Redirect into files sitting next to the binary (cwd is work_dir).
+    out_log = shlex.quote(stdout_file)
+    err_log = shlex.quote(f"{stdout_file}.err")
+    parts.append(f"> {out_log} 2> {err_log}")
+
+    return f"{cd_part} && {' '.join(parts)}"
 
 
 def main() -> int:
@@ -93,9 +116,26 @@ def main() -> int:
         help="Recurse into subdirectories when collecting input files.",
     )
     parser.add_argument(
+        "--warmup-instructions", type=int, default=200000000,
+        help="Value for the binary's --warmup-instructions (default: 200000000).",
+    )
+    parser.add_argument(
+        "--simulation-instructions", type=int, default=1000000000,
+        help="Value for the binary's --simulation-instructions "
+        "(default: 1000000000).",
+    )
+    parser.add_argument(
+        "--copies", type=int, default=4,
+        help="How many times to pass the input file to the binary (default: 4).",
+    )
+    parser.add_argument(
         "--args", default="",
-        help="Extra args for the binary. Use {file} for the input path; if "
-        "omitted the input is appended at the end.",
+        help="Extra flags inserted verbatim before the input file(s).",
+    )
+    parser.add_argument(
+        "--stdout-file", default="stdout.log",
+        help="Filename for the binary's stdout, written inside each work dir "
+        "(default: stdout.log). stderr goes to the same name with '.err' added.",
     )
     parser.add_argument(
         "--prefix", default="job", help="Prefix for tmux session names (default: job).",
@@ -168,7 +208,11 @@ def main() -> int:
                 name, suffix = f"{base}_{suffix}", suffix + 1
             used_names.add(name)
 
-            command = build_command(work_dir, binary.name, file_path, args.args)
+            command = build_command(
+                work_dir, binary.name, file_path,
+                args.warmup_instructions, args.simulation_instructions,
+                args.copies, args.args, args.stdout_file,
+            )
             if args.keep_alive:
                 command = f"{command}; echo; echo '[done -- press enter]'; read"
 
