@@ -1,5 +1,5 @@
 {
-  "executable_name": "champsim_4core_llcrtm_avg5",
+  "executable_name": "champsim_4core_llcrtm_avg6",
   "block_size": 64,
   "page_size": 4096,
   "heartbeat_frequency": 10000000,
