@@ -42,7 +42,7 @@ void rtlruavg6::add_csv_row(const std::string& filename,
 rtlruavg6::rtlruavg6(CACHE* cache) : rtlruavg6(cache, cache->NUM_SET, cache->NUM_WAY) {}
 
 rtlruavg6::rtlruavg6(CACHE* cache, long sets, long ways) : replacement(cache), NUM_WAY(ways), last_used_cycles(static_cast<std::size_t>(sets * ways), 0) {
-  rtlruavg6 = 0;
+  extra_cycle_w = 0;
   access_sq = new long*[sets];
   benefit = new bool[sets];
   next_save = save_step;
