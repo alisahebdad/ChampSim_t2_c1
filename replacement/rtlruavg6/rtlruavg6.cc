@@ -136,7 +136,7 @@ void rtlruavg6::update_replacement_state(uint32_t triggering_cpu, long set, long
 
 
 long rtlruavg6::extra_cycle(){
-  return rtlruavg6;
+  return extra_cycle_w;
 }
 
 void rtlruavg6::save_data(){
@@ -187,7 +187,7 @@ void rtlruavg6::cal_avg(long set,access_type type, uint8_t hit){
   for (int avgX = 1;avgX < 10;avgX++){
     sum += access_sq[set][avgX];
     if (avgX == 6){
-      rtlruavg6 = std::abs((sum/avgX)-current_way);
+      extra_cycle_w = std::abs((sum/avgX)-current_way);
     }
     if (hit)
       avg[avgX].hit[ static_cast<int>(type) ]  += std::abs((sum/avgX)-current_way);
