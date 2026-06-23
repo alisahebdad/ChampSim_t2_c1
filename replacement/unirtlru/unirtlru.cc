@@ -63,6 +63,9 @@ unirtlru::unirtlru(CACHE* cache, long sets, long ways) : replacement(cache), NUM
       "hit_NUM_TYPES"  , "miss_NUM_TYPES",
       "total_access"
     });
+    init_csv_file("output/histogram_"+ std::to_string(i)+".csv",{
+      "0","1","2","3","4","5","6","7","8","9","10","11","12","13","14","15"
+    });
   init_csv_file("output/avg_nmru"+ std::to_string(i)+".csv",{
       "hit_LOAD"       , "miss_LOAD", 
       "hit_RFO"        , "miss_RFO",
@@ -145,6 +148,14 @@ void unirtlru::save_data(){
   //     std::cout << avgX << " " << avg[avgX].hit[j] << " " << avg[avgX].miss[j] << std::endl; 
   // }
     for (int i = 1;i<10;++i){  
+
+      add_csv_row("output/histogram_"+ std::to_string(i)+".csv",{
+        hist[i][0],hist[i][1],hist[i][2],hist[i][3],
+        hist[i][4],hist[i][5],hist[i][6],hist[i][7],
+        hist[i][8],hist[i][9],hist[i][10],hist[i][11],
+        hist[i][12],hist[i][13],hist[i][14],hist[i][15],
+      });
+      
       add_csv_row("output/avg"+ std::to_string(i)+".csv",
       {
         avg[i].hit[0],avg[i].miss[0],
@@ -155,7 +166,8 @@ void unirtlru::save_data(){
         avg[i].hit[5],avg[i].miss[5],
         avg[i].total_access
       });
-    add_csv_row("output/avg_nmru"+ std::to_string(i)+".csv",
+
+      add_csv_row("output/avg_nmru"+ std::to_string(i)+".csv",
       {
         avg_nmru[i].hit[0],avg_nmru[i].miss[0],
         avg_nmru[i].hit[1],avg_nmru[i].miss[1],
@@ -182,9 +194,11 @@ void unirtlru::save_data(){
 
 void unirtlru::cal_avg(long set,access_type type, uint8_t hit){
   long current_way = access_sq[set][0];
+  hist[0][current_way]+=1;
   long sum = 0;
   for (int avgX = 1;avgX < 10;avgX++){
     sum += access_sq[set][avgX];
+    hist[avgX][std::abs((sum/avgX)-current_way)] += 1; 
     if (hit)
       avg[avgX].hit[ static_cast<int>(type) ]  += std::abs((sum/avgX)-current_way);
     else{
@@ -193,8 +207,6 @@ void unirtlru::cal_avg(long set,access_type type, uint8_t hit){
     avg[avgX].total_access += 1;
     }
   
-
-
 }
 
 void unirtlru::cal_avg_nmru(long set,access_type type, uint8_t hit){
@@ -212,6 +224,8 @@ void unirtlru::cal_avg_nmru(long set,access_type type, uint8_t hit){
 
 void unirtlru::clean_data(){
   for (int i = 0; i<10; ++i){
+    for (int j = 0 ; j < 16;++j)
+      hist[i][j] = 0 ;
     for(int j = 0;j<10;++j)
     {
       avg[i].hit[j]  = 0;

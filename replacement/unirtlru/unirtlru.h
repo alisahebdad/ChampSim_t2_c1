@@ -22,6 +22,7 @@ class unirtlru : public champsim::modules::replacement
   long **access_sq;
   bool *benefit;
   uint64_t next_save ;
+  long hist[10][17];
   struct instance avg[10];
   struct instance avg_nmru[10];
   struct instance avg_nmru_i1[10];
