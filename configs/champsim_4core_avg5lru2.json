@@ -1,5 +1,5 @@
 {
-  "executable_name": "champsim",
+  "executable_name": "champsim_4core_avg5lru_cycle_count",
   "block_size": 64,
   "page_size": 4096,
   "heartbeat_frequency": 10000000,
@@ -71,22 +71,6 @@
     "prefetcher": "no"
   },
 
-  "L2C": {
-    "sets": 1024,
-    "ways": 8,
-    "rq_size": 32,
-    "wq_size": 32,
-    "pq_size": 16,
-    "mshr_size": 32,
-    "latency": 10,
-    "max_tag_check": 1,
-    "max_fill": 1,
-    "prefetch_as_load": false,
-    "virtual_prefetch": false,
-    "prefetch_activate": "LOAD,PREFETCH",
-    "prefetcher": "no"
-  },
-
   "ITLB": {
     "sets": 16,
     "ways": 4,
@@ -143,8 +127,8 @@
 
   "LLC": {
     "frequency": 4000,
-    "sets": 2048,
-    "ways": 16,
+    "sets": 4096,
+    "ways": 32,
     "rq_size": 32,
     "wq_size": 32,
     "pq_size": 32,
@@ -156,7 +140,7 @@
     "virtual_prefetch": false,
     "prefetch_activate": "LOAD,PREFETCH",
     "prefetcher": "no",
-    "replacement": "lru"
+    "replacement": "avglru2"
   },
 
   "physical_memory": {
