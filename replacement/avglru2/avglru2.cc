@@ -85,6 +85,11 @@ void avglru2::update_replacement_state(uint32_t triggering_cpu, long set, long w
                                    champsim::address victim_addr, access_type type, uint8_t hit)
 {
   // Mark the way as being used on the current cycle
+  
+  auto cycle_ = intern_->current_time.time_since_epoch() / intern_->clock_period;
+  
+  std::cout << "cycle : " << cycle_ << std::endl;
+
   if (hit && access_type{type} != access_type::WRITE) // Skip this for writeback hits
     last_used_cycles.at((std::size_t)(set * NUM_WAY + way)) = cycle++;
   if (way == NUM_WAY)
