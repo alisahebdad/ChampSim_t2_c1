@@ -5,10 +5,11 @@
 
 #include "cache.h"
 #include "modules.h"
-
+#include "cache_entropy.h"
 class lru_set_interval : public champsim::modules::replacement
 {
   long NUM_WAY;
+  long NUM_SET;
   CACHE *myCache;
   std::vector<uint64_t> last_used_cycles;
   std::vector<uint64_t> last_access;
@@ -23,7 +24,7 @@ class lru_set_interval : public champsim::modules::replacement
   long extra_cycle_holder; 
 
   uint64_t cycle = 0;
-  
+  CacheEntropyCalculator *calc; 
 public:
   explicit lru_set_interval(CACHE* cache);
   lru_set_interval(CACHE* cache, long sets, long ways);

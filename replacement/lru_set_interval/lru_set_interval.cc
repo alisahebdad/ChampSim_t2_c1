@@ -2,13 +2,13 @@
 #include <iostream>
 #include <algorithm>
 #include <cassert>
-
+#include "cache_entropy.h"
 
 lru_set_interval::lru_set_interval(CACHE* cache) : lru_set_interval(cache, cache->NUM_SET, cache->NUM_WAY) {
   myCache = cache;
 }
 
-lru_set_interval::lru_set_interval(CACHE* cache, long sets, long ways) : replacement(cache), NUM_WAY(ways), last_used_cycles(static_cast<std::size_t>(sets * ways), 0),last_access(static_cast<std::size_t>(sets),0) {
+lru_set_interval::lru_set_interval(CACHE* cache, long sets, long ways) : replacement(cache), NUM_WAY(ways),NUM_SET(sets), last_used_cycles(static_cast<std::size_t>(sets * ways), 0),last_access(static_cast<std::size_t>(sets),0) {
   myCache = cache;
   short_interval = 0 ;
   interval_sum     = 0 ;
@@ -17,7 +17,7 @@ lru_set_interval::lru_set_interval(CACHE* cache, long sets, long ways) : replace
   total_interval   = 0 ;
   extra_cycle_holder = 0;
   total_short_interval = 0;
-
+  calc = new CacheEntropyCalculator(sets,ways);
 }
 
 long lru_set_interval::find_victim(uint32_t triggering_cpu, uint64_t instr_id, long set, const champsim::cache_block* current_set, champsim::address ip,
@@ -45,6 +45,7 @@ void lru_set_interval::update_replacement_state(uint32_t triggering_cpu, long se
 {
   // Mark the way as being used on the current cycle
   if (hit && (access_type{type} == access_type::WRITE || access_type{type} == access_type::LOAD ) ){ 
+    calc->recordAccess(set,way);
     auto current_cycle_time = (myCache->current_time.time_since_epoch() / myCache->clock_period); 
     auto interval_ = current_cycle_time - last_access[set];
     extra_cycle_holder = static_cast<long>(interval_);
@@ -62,6 +63,7 @@ void lru_set_interval::update_replacement_state(uint32_t triggering_cpu, long se
                 << "Short_Access      : " << ((double)short_interval*100)/(double)total_access << "\n"
                 << "Average Access    : " << ((double)total_interval)/(double)total_access << "\n" 
                 << "total_interval_avg: " << ((double)total_short_interval)/(double)short_interval
+                << "Entropy           : " << (double)calc->computeHnorm() 
                 << "\n\n" ;
     }
     last_access[set] = current_cycle_time ;
@@ -80,9 +82,13 @@ void lru_set_interval::replacement_final_stats(){
               << "total_access     #: " << total_access     << "\n"
               << "Short_Access      : " << ((double)short_interval*100)/(double)total_access << "\n"
               << "Average Access    : " << ((double)total_interval)/(double)total_access << "\n" 
-              << "total_interval_avg: " << ((double)total_short_interval)/(double)short_interval
+              << "total_interval_avg: " << ((double)total_short_interval)/(double)short_interval << "\n"
+              << "Entropy           : " << (double)calc->computeHnorm()   
               << "\n\n" ;
-
+    for (int i = 0;i<NUM_SET;++i) {
+      std::cout << calc->computeSetEntropy(i) << " ";
+    }
+  std::cout << "\n\n";
 }
 
 long lru_set_interval::extra_cycle(){
