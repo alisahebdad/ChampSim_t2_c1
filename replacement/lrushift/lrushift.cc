@@ -2,6 +2,7 @@
 #include <iostream>
 #include <algorithm>
 #include <cassert>
+#include <filesystem>
 
 lrushift::lrushift(CACHE* cache) : lrushift(cache, cache->NUM_SET, cache->NUM_WAY) {}
 
@@ -42,6 +43,8 @@ long lrushift::find_victim(uint32_t triggering_cpu, uint64_t instr_id, long set,
 void lrushift::initialize_replacement(){
   std::cout << "lrushift is installed " << std::endl;
   std::cout << "WAYS :" << NUM_WAY << " len(History[set]) : " << history[0].size() << std::endl;
+  std::cout << "Working directory: " << std::filesystem::current_path() << std::endl;
+
 }
 
 void lrushift::replacement_cache_fill(uint32_t triggering_cpu, long set, long way, champsim::address full_addr, champsim::address ip, champsim::address victim_addr,
