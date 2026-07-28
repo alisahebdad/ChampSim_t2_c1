@@ -19,7 +19,7 @@ lrushift::lrushift(CACHE* cache, long sets, long ways) : replacement(cache),
     myCache(cache),
     last_access(static_cast<std::size_t>(sets), 0),
     add_extra_by(0),
-    log_cycle(10000),
+    log_cycle(100000),
     log_cycle_(0)
 {}
 
@@ -41,7 +41,7 @@ long lrushift::find_victim(uint32_t triggering_cpu, uint64_t instr_id, long set,
 
 void lrushift::initialize_replacement(){
   std::cout << "lrushift is installed " << std::endl;
-  std::cout << "WAYS : " << NUM_WAY << " len(History[set]) : " << history[0].size() << std::endl;
+  std::cout << "WAYS :" << NUM_WAY << " len(History[set]) : " << history[0].size() << std::endl;
 }
 
 void lrushift::replacement_cache_fill(uint32_t triggering_cpu, long set, long way, champsim::address full_addr, champsim::address ip, champsim::address victim_addr,
@@ -98,9 +98,11 @@ void lrushift::update_replacement_state(uint32_t triggering_cpu, long set, long 
 
 
 void lrushift::replacement_final_stats(){
-
+ 
 }
-
+long lrushift::extra_cycle(){
+  return 0;
+}
 void lrushift::appendToCSV(const std::string& filename,
                  size_t value1,
                  size_t value2,

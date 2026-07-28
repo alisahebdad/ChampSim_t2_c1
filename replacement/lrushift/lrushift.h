@@ -45,6 +45,9 @@ public:
                  size_t value3,
                  size_t value4,
                  const std::vector<long long>& data);
+
+  long extra_cycle();
+
 };
 
 #endif
