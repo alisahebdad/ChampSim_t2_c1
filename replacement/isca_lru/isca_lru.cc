@@ -9,7 +9,7 @@
 #include "util/bits.h"
 #include <fmt/core.h>
 
-constexpr long LRU_PERCENT = 25; // 25% of ways
+constexpr long LRU_PERCENT = 50; // 25% of ways
 
 isca_lru::isca_lru(CACHE *cache) : isca_lru(cache, cache->NUM_SET, cache->NUM_WAY) {
 }
