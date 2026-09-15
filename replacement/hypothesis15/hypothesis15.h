@@ -2,8 +2,8 @@
 #define REPLACEMENT_HYPOTHESIS15_H
 
 #include <cstdint>
-#include <vector>
 #include <deque>
+#include <vector>
 
 #include "cache.h"
 #include "modules.h"
@@ -18,12 +18,13 @@ class hypothesis15 : public champsim::modules::replacement {
         champsim::data::bits tag_start_bit{0};
         std::vector<uint16_t> header_trackers;
 
+        long extra_cycle_w = 0;
         long num_lru_candidates;
-        
+
         struct HistEntry {
-            uint32_t cpu;
-            int local_set;
-            uint32_t way;
+                uint32_t cpu;
+                int local_set;
+                uint32_t way;
         };
         std::vector<std::deque<HistEntry>> history_buffers;
         int max_hist_size = 32;
