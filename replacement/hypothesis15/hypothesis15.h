@@ -50,6 +50,8 @@ class hypothesis15 : public champsim::modules::replacement {
                                       champsim::address victim_addr,
                                       access_type type, uint8_t hit);
         void replacement_final_stats();
-};
+
+        long extra_cycle();
+        ;
 
 #endif
