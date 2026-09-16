@@ -216,7 +216,7 @@ void hypothesis15::replacement_cache_fill(uint32_t triggering_cpu, long set,
     total_shifts += (local_set > old_port) ? (local_set - old_port)
                                            : (old_port - local_set);
 
-    extra_cycle_w = dist >= 1 ? dist - 1 : 0;
+    extra_cycle_w = dist;
     header_trackers[superset_idx * NUM_WAY + way] = local_set;
 
     last_used_cycles[set * NUM_WAY + way] = cycle++;
@@ -243,7 +243,7 @@ void hypothesis15::update_replacement_state(uint32_t triggering_cpu, long set,
         total_shifts += (local_set > old_port) ? (local_set - old_port)
                                                : (old_port - local_set);
 
-        extra_cycle_w = dist >= 1 ? dist - 1 : 0;
+        extra_cycle_w = dist;
         header_trackers[superset_idx * NUM_WAY + way] = local_set;
 
         if (access_type{type} != access_type::WRITE) {
