@@ -6,7 +6,7 @@
 lru_log::lru_log(CACHE* cache) : lru_log(cache, cache->NUM_SET, cache->NUM_WAY) {}
 
 lru_log::lru_log(CACHE* cache, long sets, long ways) : replacement(cache), NUM_WAY(ways), last_used_cycles(static_cast<std::size_t>(sets * ways), 0) {
-  logger = new SimulationLogger("/home/ownergive/Documents/result");  
+  logger = new SimulationLogger("./result");  
   myCache = cache;
 
 }
