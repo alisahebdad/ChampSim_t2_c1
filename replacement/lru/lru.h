@@ -6,12 +6,12 @@
 #include "cache.h"
 #include "modules.h"
 
+
 class lru : public champsim::modules::replacement
 {
   long NUM_WAY;
   std::vector<uint64_t> last_used_cycles;
   uint64_t cycle = 0;
-
 public:
   explicit lru(CACHE* cache);
   lru(CACHE* cache, long sets, long ways);
@@ -23,6 +23,7 @@ public:
                               access_type type);
   void update_replacement_state(uint32_t triggering_cpu, long set, long way, champsim::address full_addr, champsim::address ip, champsim::address victim_addr,
                                 access_type type, uint8_t hit);
+
   // void replacement_final_stats()
 };
 

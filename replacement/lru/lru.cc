@@ -5,7 +5,8 @@
 
 lru::lru(CACHE* cache) : lru(cache, cache->NUM_SET, cache->NUM_WAY) {}
 
-lru::lru(CACHE* cache, long sets, long ways) : replacement(cache), NUM_WAY(ways), last_used_cycles(static_cast<std::size_t>(sets * ways), 0) {}
+lru::lru(CACHE* cache, long sets, long ways) : replacement(cache), NUM_WAY(ways), last_used_cycles(static_cast<std::size_t>(sets * ways), 0) {
+}
 
 long lru::find_victim(uint32_t triggering_cpu, uint64_t instr_id, long set, const champsim::cache_block* current_set, champsim::address ip,
                       champsim::address full_addr, access_type type)
@@ -31,6 +32,9 @@ void lru::update_replacement_state(uint32_t triggering_cpu, long set, long way, 
                                    champsim::address victim_addr, access_type type, uint8_t hit)
 {
   // Mark the way as being used on the current cycle
+  //
+
+
   if (hit && access_type{type} != access_type::WRITE) // Skip this for writeback hits
     last_used_cycles.at((std::size_t)(set * NUM_WAY + way)) = cycle++;
 }
