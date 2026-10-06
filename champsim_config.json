@@ -1,5 +1,5 @@
 {
-  "executable_name": "champsim",
+  "executable_name": "champsim_hyp16_opt",
   "block_size": 64,
   "page_size": 4096,
   "heartbeat_frequency": 10000000,
@@ -156,7 +156,7 @@
     "virtual_prefetch": false,
     "prefetch_activate": "LOAD,PREFETCH",
     "prefetcher": "no",
-    "replacement": "tapecache"
+    "replacement": "hyp16_opt"
   },
 
   "physical_memory": {
